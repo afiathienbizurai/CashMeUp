@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../../core/theme.dart';
 import '../../models/goal_model.dart';
 import '../../providers/goal_provider.dart';
+import '../widgets/primary_button.dart'; // Pastikan import ini ada
 import 'add_goal_page.dart';
 
 class GoalsPage extends StatelessWidget {
@@ -27,27 +29,53 @@ class GoalsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppTheme.dark),
           onPressed: () => Navigator.pop(context),
         ),
+        // PERBAIKAN 1: Tombol Tambah selalu muncul di Header
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: AppTheme.bgApp, borderRadius: BorderRadius.circular(12)),
+              child: const FaIcon(FontAwesomeIcons.plus, size: 14, color: AppTheme.dark),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: StreamBuilder<List<GoalModel>>(
         stream: context.watch<GoalProvider>().getGoals(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
           
           final goals = snapshot.data ?? [];
 
+          // PERBAIKAN 2: Tampilan Empty State yang lebih jelas
           if (goals.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const FaIcon(FontAwesomeIcons.bullseye, size: 40, color: AppTheme.muted),
-                  const SizedBox(height: 16),
-                  Text("Belum ada goals", style: AppTheme.font.copyWith(color: AppTheme.muted)),
-                  TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
-                    child: const Text("Buat Goal Pertama"),
-                  )
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80, height: 80,
+                      decoration: BoxDecoration(color: AppTheme.primarySoft, shape: BoxShape.circle),
+                      child: const Center(child: FaIcon(FontAwesomeIcons.bullseye, size: 32, color: AppTheme.primary)),
+                    ),
+                    const SizedBox(height: 24),
+                    Text("Belum ada goals", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
+                    const SizedBox(height: 8),
+                    Text("Yuk mulai wujudkan impianmu dengan menabung sedikit demi sedikit.", textAlign: TextAlign.center, style: AppTheme.font.copyWith(color: AppTheme.muted)),
+                    const SizedBox(height: 32),
+                    // Tombol Besar (Call to Action)
+                    PrimaryButton(
+                      text: "Buat Goal Pertama", 
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -66,24 +94,14 @@ class GoalsPage extends StatelessWidget {
                 const SizedBox(height: 32),
 
                 // === HEADER LIST ===
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Goals Lainnya", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                    GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
-                      child: Container(
-                        width: 36, height: 36,
-                        decoration: BoxDecoration(color: AppTheme.primarySoft, borderRadius: BorderRadius.circular(12)),
-                        child: const Center(child: FaIcon(FontAwesomeIcons.plus, size: 14, color: AppTheme.primary)),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // === LIST GOALS KECIL ===
-                ...otherGoals.map((g) => _buildGoalItem(context, g)),
+                // Jika goals > 1, tampilkan tulisan "Lainnya"
+                if (otherGoals.isNotEmpty) ...[
+                  Text("Goals Lainnya", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
+                  const SizedBox(height: 16),
+                  
+                  // === LIST GOALS KECIL ===
+                  ...otherGoals.map((g) => _buildGoalItem(context, g)),
+                ],
                 
                 const SizedBox(height: 40),
               ],
@@ -154,6 +172,7 @@ class GoalsPage extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Inisial (Tanpa Icon)
           Container(
             width: 48, height: 48,
             decoration: BoxDecoration(color: colors['bg'], borderRadius: BorderRadius.circular(16)),
@@ -189,7 +208,6 @@ class GoalsPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit, size: 16, color: AppTheme.muted),
             onPressed: () {
-               // Logic Update (Tugasmu nanti: membuat dialog update saldo)
                _showUpdateDialog(context, goal);
             },
           )
@@ -198,7 +216,7 @@ class GoalsPage extends StatelessWidget {
     );
   }
 
-  // Bonus: Dialog Cepat Update Tabungan
+  // Dialog Cepat Update Tabungan
   void _showUpdateDialog(BuildContext context, GoalModel goal) {
     final controller = TextEditingController();
     showDialog(
