@@ -54,8 +54,8 @@ class _HomePageState extends State<HomePage> {
         title: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: AppTheme.primarySoft,
                 shape: BoxShape.circle,
@@ -74,11 +74,11 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   "Haii, $displayName! 👋",
-                  style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark),
+                  style: AppTheme.font.copyWith(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.dark),
                 ),
                 Text(
                   "Atur keuanganmu hari ini",
-                  style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted),
+                  style: AppTheme.font.copyWith(fontSize: 10, color: AppTheme.muted),
                 ),
               ],
             ),
