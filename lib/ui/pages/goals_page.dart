@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme.dart';
 import '../../models/goal_model.dart';
 import '../../providers/goal_provider.dart';
-import '../widgets/primary_button.dart'; // Pastikan import ini ada
+import '../widgets/primary_button.dart';
 import 'add_goal_page.dart';
 
 class GoalsPage extends StatelessWidget {
@@ -25,30 +25,17 @@ class GoalsPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
-        
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: AppTheme.bgApp, borderRadius: BorderRadius.circular(12)),
-              child: const FaIcon(FontAwesomeIcons.plus, size: 14, color: AppTheme.dark),
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
+        automaticallyImplyLeading: false, // Karena ini Tab Utama
+        // Tombol Tambah di AppBar DIHAPUS sesuai permintaan
       ),
       body: StreamBuilder<List<GoalModel>>(
         stream: context.watch<GoalProvider>().getGoals(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
           
           final goals = snapshot.data ?? [];
 
-          // PERBAIKAN 2: Tampilan Empty State yang lebih jelas
+          // EMPTY STATE
           if (goals.isEmpty) {
             return Center(
               child: Padding(
@@ -56,17 +43,10 @@ class GoalsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(color: AppTheme.primarySoft, shape: BoxShape.circle),
-                      child: const Center(child: FaIcon(FontAwesomeIcons.bullseye, size: 32, color: AppTheme.primary)),
-                    ),
-                    const SizedBox(height: 24),
+                    const FaIcon(FontAwesomeIcons.bullseye, size: 40, color: AppTheme.muted),
+                    const SizedBox(height: 16),
                     Text("Belum ada goals", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                    const SizedBox(height: 8),
-                    Text("Yuk mulai wujudkan impianmu dengan menabung sedikit demi sedikit.", textAlign: TextAlign.center, style: AppTheme.font.copyWith(color: AppTheme.muted)),
                     const SizedBox(height: 32),
-                    // Tombol Besar (Call to Action)
                     PrimaryButton(
                       text: "Buat Goal Pertama", 
                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
@@ -77,7 +57,6 @@ class GoalsPage extends StatelessWidget {
             );
           }
 
-          // Pisahkan Goal Utama (Paling baru/prioritas) dan Goal Lainnya
           final featuredGoal = goals.first;
           final otherGoals = goals.skip(1).toList();
 
@@ -86,19 +65,47 @@ class GoalsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // === FEATURED GOAL (KARTU HITAM BESAR) ===
-                _buildFeaturedGoal(featuredGoal),
+                // === FEATURED GOAL (Klik untuk Edit) ===
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalPage(goalToEdit: featuredGoal))),
+                  child: _buildFeaturedGoal(featuredGoal)
+                ),
                 const SizedBox(height: 32),
 
-                // === HEADER LIST ===
-                // Jika goals > 1, tampilkan tulisan "Lainnya"
-                if (otherGoals.isNotEmpty) ...[
-                  Text("Goals Lainnya", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                  const SizedBox(height: 16),
-                  
-                  // === LIST GOALS KECIL ===
-                  ...otherGoals.map((g) => _buildGoalItem(context, g)),
-                ],
+                // === HEADER LIST & TOMBOL TAMBAH ===
+                // Tombol tambah sekarang ada di SINI
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Goals Lainnya", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
+                    
+                    // TOMBOL TAMBAH (Kecil di sebelah text)
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primarySoft, 
+                          borderRadius: BorderRadius.circular(12)
+                        ),
+                        child: Row(
+                          children: [
+                            const FaIcon(FontAwesomeIcons.plus, size: 12, color: AppTheme.primary),
+                            const SizedBox(width: 6),
+                            Text("Tambah", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // === LIST GOALS KECIL (Klik untuk Edit) ===
+                ...otherGoals.map((g) => GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalPage(goalToEdit: g))),
+                  child: _buildGoalItem(context, g)
+                )),
                 
                 const SizedBox(height: 40),
               ],
@@ -113,9 +120,10 @@ class GoalsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.dark,
+        // Jika selesai, ubah background jadi Hijau Gelap, jika belum Hitam/Dark
+        color: goal.isCompleted ? AppTheme.success : AppTheme.dark,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: AppTheme.dark.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: (goal.isCompleted ? AppTheme.success : AppTheme.dark).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,15 +132,23 @@ class GoalsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(goal.title, style: AppTheme.font.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                Row(
+                  children: [
+                    Text(goal.title, style: AppTheme.font.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    if (goal.isCompleted)
+                      const Padding(padding: EdgeInsets.only(left: 8), child: Icon(Icons.check_circle, color: Colors.white, size: 20))
+                  ],
+                ),
                 const SizedBox(height: 4),
-                Text("Target: ${formatRupiah(goal.targetAmount)}", style: AppTheme.font.copyWith(fontSize: 12, color: Colors.grey)),
+                Text("Target: ${formatRupiah(goal.targetAmount)}", style: AppTheme.font.copyWith(fontSize: 12, color: Colors.white70)),
                 const SizedBox(height: 12),
-                Text("Terkumpul: ${formatRupiah(goal.currentAmount)}", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  goal.isCompleted ? "Tercapai!" : "Terkumpul: ${formatRupiah(goal.currentAmount)}", 
+                  style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)
+                ),
               ],
             ),
           ),
-          // Circular Progress
           SizedBox(
             width: 64, height: 64,
             child: Stack(
@@ -141,8 +157,8 @@ class GoalsPage extends StatelessWidget {
                   child: CircularProgressIndicator(
                     value: goal.progress,
                     strokeWidth: 6,
-                    backgroundColor: Colors.white10,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
                 Center(
@@ -172,9 +188,14 @@ class GoalsPage extends StatelessWidget {
           // Inisial (Tanpa Icon)
           Container(
             width: 48, height: 48,
-            decoration: BoxDecoration(color: colors['bg'], borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: goal.isCompleted ? AppTheme.success.withOpacity(0.1) : colors['bg'], 
+              borderRadius: BorderRadius.circular(16)
+            ),
             child: Center(
-              child: Text(goal.title.isNotEmpty ? goal.title[0].toUpperCase() : 'G', style: TextStyle(color: colors['text'], fontWeight: FontWeight.bold, fontSize: 18)),
+              child: goal.isCompleted
+                ? const Icon(Icons.check, color: AppTheme.success)
+                : Text(goal.title.isNotEmpty ? goal.title[0].toUpperCase() : 'G', style: TextStyle(color: colors['text'], fontWeight: FontWeight.bold, fontSize: 18)),
             ),
           ),
           const SizedBox(width: 16),
@@ -184,57 +205,27 @@ class GoalsPage extends StatelessWidget {
               children: [
                 Text(goal.title, style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: 4),
-                // Progress Bar Garis
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: goal.progress,
                     backgroundColor: Colors.grey.shade100,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors['text']!),
+                    // Jika selesai warna hijau, jika belum ikut warna kategori
+                    valueColor: AlwaysStoppedAnimation<Color>(goal.isCompleted ? AppTheme.success : colors['text']!),
                     minHeight: 6,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text("Terkumpul ${formatRupiah(goal.currentAmount)}", style: const TextStyle(fontSize: 10, color: AppTheme.muted)),
+                Text(
+                  goal.isCompleted ? "Selesai" : "Terkumpul ${formatRupiah(goal.currentAmount)}", 
+                  style: TextStyle(fontSize: 10, color: goal.isCompleted ? AppTheme.success : AppTheme.muted, fontWeight: goal.isCompleted ? FontWeight.bold : FontWeight.normal)
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
           
-          // Tombol Edit (Kecil) -> Untuk menabung
-          IconButton(
-            icon: const Icon(Icons.edit, size: 16, color: AppTheme.muted),
-            onPressed: () {
-               _showUpdateDialog(context, goal);
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  // Dialog Cepat Update Tabungan
-  void _showUpdateDialog(BuildContext context, GoalModel goal) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("Update Tabungan: ${goal.title}"),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: "Masukkan Saldo Baru (Total)"),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal")),
-          TextButton(
-            onPressed: () {
-              final val = int.tryParse(controller.text) ?? goal.currentAmount;
-              ctx.read<GoalProvider>().updateGoal(goal.id, val);
-              Navigator.pop(ctx);
-            },
-            child: const Text("Simpan"),
-          ),
+          // ICON PENSIL SUDAH DIHAPUS (Sekarang seluruh kartu bisa diklik)
+          const Icon(Icons.chevron_right, size: 16, color: AppTheme.muted),
         ],
       ),
     );
