@@ -116,12 +116,21 @@ class _SettingsPageState extends State<SettingsPage> {
             // PROFILE CARD
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.grey.shade100)),
+              decoration: BoxDecoration(
+                color: Colors.white, 
+                borderRadius: BorderRadius.circular(24), 
+                border: Border.all(color: Colors.grey.shade100)
+              ),
               child: Row(
                 children: [
+                  // Avatar
                   Container(
                     width: 60, height: 60,
-                    decoration: BoxDecoration(color: AppTheme.primarySoft, shape: BoxShape.circle, border: Border.all(color: Colors.indigo.shade100, width: 2)),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primarySoft, 
+                      shape: BoxShape.circle, 
+                      border: Border.all(color: Colors.indigo.shade100, width: 2)
+                    ),
                     child: Center(
                       child: Text(
                         displayName.isNotEmpty ? displayName[0].toUpperCase() : "U", 
@@ -130,24 +139,47 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
+                  
+                  // Info User
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(displayName, style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text(user?.email ?? "", style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted)),
-                        const SizedBox(height: 8),
+                        // ROW: Nama + Icon Edit
+                        Row(
+                          children: [
+                            Flexible( // Agar teks tidak overflow jika nama panjang
+                              child: Text(
+                                displayName, 
+                                style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // ICON PENSIL
+                            GestureDetector(
+                              onTap: _showEditNameDialog,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.bgApp,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.edit, size: 14, color: AppTheme.muted),
+                              ),
+                            ),
+                          ],
+                        ),
                         
-                        // TOMBOL EDIT PROFIL (SEKARANG BERFUNGSI)
-                        GestureDetector(
-                          onTap: _showEditNameDialog,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(color: AppTheme.dark, borderRadius: BorderRadius.circular(20)),
-                            child: const Text("Ganti Nama", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                          ),
-                        )
+                        const SizedBox(height: 4),
+                        
+                        // Email
+                        Text(
+                          user?.email ?? "", 
+                          style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted)
+                        ),
+                        
+                        // TOMBOL LAMA "Ganti Nama" SUDAH DIHAPUS DARI SINI
                       ],
                     ),
                   )
