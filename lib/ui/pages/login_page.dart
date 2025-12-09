@@ -5,34 +5,32 @@ import '../../core/theme.dart';
 import '../../services/auth_service.dart';
 import '../widgets/custom_input.dart';
 import '../widgets/primary_button.dart';
+import 'register_page.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final _nameController = TextEditingController(); 
+class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  void _handleRegister() async {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await context.read<AuthService>().signUp(
+        await context.read<AuthService>().signIn(
               _emailController.text,
               _passwordController.text,
-              _nameController.text,
             );
-        if (mounted) Navigator.pop(context); 
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal Daftar: ${e.toString().split(']').last}')),
+          SnackBar(content: Text('Login Gagal: ${e.toString().split(']').last}')),
         );
       } finally {
         if (mounted) setState(() => _isLoading = false);
@@ -44,35 +42,33 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const FaIcon(FontAwesomeIcons.arrowLeft, color: AppTheme.dark, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
-                Text("Buat Akun Baru", style: AppTheme.font.copyWith(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.dark)),
-                const SizedBox(height: 8),
-                Text("Mulai perjalanan hematmu sekarang.", style: AppTheme.font.copyWith(color: AppTheme.muted)),
-                
-                const SizedBox(height: 32),
-                CustomInput(
-                  label: "Nama Lengkap",
-                  placeholder: "Contoh: Nisa Putri",
-                  icon: FontAwesomeIcons.user,
-                  controller: _nameController,
+                const SizedBox(height: 60),
+                // Logo Icon
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(color: Colors.indigo.shade100, blurRadius: 20, offset: const Offset(0, 10))
+                    ],
+                  ),
+                  child: const Center(child: FaIcon(FontAwesomeIcons.wallet, color: Colors.white, size: 28)),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
+                Text("Selamat Datang!", style: AppTheme.font.copyWith(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.dark)),
+                const SizedBox(height: 8),
+                Text("Masuk untuk kelola keuanganmu.", style: AppTheme.font.copyWith(color: AppTheme.muted)),
+                
+                const SizedBox(height: 40),
                 CustomInput(
                   label: "Email Address",
                   placeholder: "nama@email.com",
@@ -91,9 +87,21 @@ class _RegisterPageState extends State<RegisterPage> {
                 
                 const SizedBox(height: 32),
                 PrimaryButton(
-                  text: "Daftar Akun",
-                  onPressed: _handleRegister,
+                  text: "Masuk Sekarang",
+                  onPressed: _handleLogin,
                   isLoading: _isLoading,
+                ),
+                
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Belum punya akun? ", style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted)),
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterPage())),
+                      child: Text("Daftar dulu", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                    ),
+                  ],
                 ),
               ],
             ),
