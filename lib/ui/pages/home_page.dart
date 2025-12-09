@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
@@ -14,6 +15,7 @@ import 'history_page.dart';
 import 'goals_page.dart';
 import 'report_page.dart';
 import 'settings_page.dart';
+import 'notification_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -109,11 +111,59 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         actions: [
-          // Tombol Notifikasi & Settings (Navigasi menyusul)
-          // Di AppBar actions:
+          // TOMBOL NOTIFIKASI
           IconButton(
             onPressed: () {
-              // Navigasi ke Settings
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsPage()));
+            },
+            icon: Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.white, 
+                    shape: BoxShape.circle
+                  ),
+                  child: const FaIcon(FontAwesomeIcons.bell, size: 20, color: AppTheme.dark),
+                ),
+                
+                // Indikator Merah (Dot) - Cek Realtime jika ada yang unread
+                // Kita gunakan StreamBuilder kecil di sini khusus untuk badge
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(FirebaseAuth.instance.currentUser?.uid)
+                        .collection('notifications')
+                        .where('isRead', isEqualTo: false) // Hanya cari yang belum dibaca
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                        return Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: AppTheme.danger,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        );
+                      }
+                      return const SizedBox(); // Tidak ada dot jika semua sudah dibaca
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          // TOMBOL SETTINGS (Yang sudah ada sebelumnya)
+          IconButton(
+            onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
             },
             icon: Container(
