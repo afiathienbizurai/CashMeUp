@@ -200,10 +200,10 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Transaksi Terbaru", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                    TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage())),
-                      child: Text("Lihat Semua", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary))
-                    ),
+                    // TextButton(
+                    //   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage())),
+                    //   child: Text("Lihat Semua", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary))
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 16),
