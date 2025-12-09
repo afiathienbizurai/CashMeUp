@@ -202,6 +202,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildMenuItem({required IconData icon, required Color color, required String title, required VoidCallback onTap}) {
     return ListTile(
       onTap: onTap,
+      // TAMBAHKAN BARIS INI:
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), 
+      
       leading: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
@@ -217,6 +220,9 @@ class _SettingsPageState extends State<SettingsPage> {
       value: _pushNotification,
       onChanged: _toggleNotification,
       activeColor: AppTheme.success,
+      // TAMBAHKAN BARIS INI:
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      
       title: Text("Push Notification", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
       secondary: Container(
         width: 36, height: 36,
