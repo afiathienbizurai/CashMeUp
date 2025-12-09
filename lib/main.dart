@@ -7,6 +7,7 @@ import 'firebase_options.dart'; // jalankan 'flutterfire configure
 import 'services/auth_service.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/goal_provider.dart';
 import 'ui/pages/login_page.dart';
 import 'ui/pages/home_page.dart';
 
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         Provider<AuthService>(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => GoalProvider()),
       ],
       child: MaterialApp(
         title: 'CashMeUp',
