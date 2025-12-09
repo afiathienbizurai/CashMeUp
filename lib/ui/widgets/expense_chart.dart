@@ -3,21 +3,27 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 
 class ExpenseChart extends StatelessWidget {
-  final List<double> dailyExpenses; // Data pengeluaran tgl 1 - 30/31
+  final List<double> dailyExpenses;
+  final Color chartColor; // <--- Parameter Baru
 
-  const ExpenseChart({super.key, required this.dailyExpenses});
+  const ExpenseChart({
+    super.key, 
+    required this.dailyExpenses,
+    required this.chartColor, // Wajib diisi
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Cari nilai tertinggi untuk menentukan batas atas grafik
-    double maxY = dailyExpenses.reduce((curr, next) => curr > next ? curr : next);
-    if (maxY == 0) maxY = 100; // Default jika belum ada data
+    double maxY = dailyExpenses.isEmpty 
+        ? 100 
+        : dailyExpenses.reduce((curr, next) => curr > next ? curr : next);
+    if (maxY == 0) maxY = 100;
 
     return AspectRatio(
       aspectRatio: 1.70,
       child: LineChart(
         LineChartData(
-          gridData: const FlGridData(show: false), // Matikan grid biar clean
+          gridData: const FlGridData(show: false),
           titlesData: FlTitlesData(
             show: true,
             rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -27,10 +33,9 @@ class ExpenseChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 30,
-                interval: 5, // Tampilkan angka setiap 5 hari (Tgl 1, 6, 11..)
+                interval: 5,
                 getTitlesWidget: (value, meta) {
                   int tgl = value.toInt() + 1;
-                  // Jangan tampilkan jika melebihi jumlah hari
                   if (tgl > dailyExpenses.length) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -47,14 +52,14 @@ class ExpenseChart extends StatelessWidget {
           minX: 0,
           maxX: dailyExpenses.length.toDouble() - 1,
           minY: 0,
-          maxY: maxY * 1.2, // Tambahkan ruang 20% di atas
+          maxY: maxY * 1.2,
           lineBarsData: [
             LineChartBarData(
               spots: List.generate(dailyExpenses.length, (index) {
                 return FlSpot(index.toDouble(), dailyExpenses[index]);
               }),
               isCurved: true,
-              color: AppTheme.primary,
+              color: chartColor, // <--- Gunakan warna parameter
               barWidth: 3,
               isStrokeCapRound: true,
               dotData: const FlDotData(show: false),
@@ -62,8 +67,8 @@ class ExpenseChart extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.primary.withOpacity(0.3),
-                    AppTheme.primary.withOpacity(0.0),
+                    chartColor.withOpacity(0.3),
+                    chartColor.withOpacity(0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -71,10 +76,9 @@ class ExpenseChart extends StatelessWidget {
               ),
             ),
           ],
-          // Interaksi saat disentuh
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => AppTheme.primary,
+              getTooltipColor: (_) => chartColor, // Tooltip ikut warna chart
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((LineBarSpot touchedSpot) {
                   return LineTooltipItem(
