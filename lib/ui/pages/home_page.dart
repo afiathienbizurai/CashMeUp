@@ -36,13 +36,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final User? user = FirebaseAuth.instance.currentUser;
+    final transactionProvider = Provider.of<TransactionProvider>(context);
 
     String displayName = user?.displayName ?? user?.email?.split('@')[0] ?? "User";
     if (displayName.isNotEmpty) {
       displayName = displayName[0].toUpperCase() + displayName.substring(1);
     }
-
-    final transactionProvider = Provider.of<TransactionProvider>(context);
 
     return Scaffold(
       backgroundColor: AppTheme.bgApp,
@@ -265,4 +264,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
+} 
