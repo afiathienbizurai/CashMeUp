@@ -17,6 +17,7 @@ class ReportPage extends StatefulWidget {
 class _ReportPageState extends State<ReportPage> {
   DateTime _currentDate = DateTime.now();
 
+  // Logic Grafik (Tetap sama)
   List<double> _generateChartData(List<TransactionModel> transactions, DateTime date) {
     int days = DateUtils.getDaysInMonth(date.year, date.month);
     List<double> data = List.filled(days, 0.0);
@@ -26,12 +27,32 @@ class _ReportPageState extends State<ReportPage> {
     return data;
   }
 
-  Map<String, double> _calculateRanking(List<TransactionModel> transactions) {
-    Map<String, double> totals = {};
+  // LOGIC BARU: Mengembalikan List Object yang berisi Nama, Total, dan Warna
+  List<Map<String, dynamic>> _calculateRanking(List<TransactionModel> transactions) {
+    Map<String, double> amounts = {};
+    Map<String, int> colors = {}; // Map untuk menyimpan warna kategori
+
     for (var tx in transactions) {
-      if (tx.type == 'expense') totals[tx.category] = (totals[tx.category] ?? 0) + tx.amount;
+      if (tx.type == 'expense') {
+        amounts[tx.category] = (amounts[tx.category] ?? 0) + tx.amount;
+        // Ambil warna dari transaksi (asumsi semua kategori bernama sama punya warna sama)
+        colors[tx.category] = tx.colorIdx; 
+      }
     }
-    return totals;
+
+    // Ubah Map menjadi List agar mudah di-sort
+    List<Map<String, dynamic>> result = [];
+    amounts.forEach((key, value) {
+      result.add({
+        'name': key,
+        'amount': value,
+        'colorIdx': colors[key] ?? 0,
+      });
+    });
+
+    // Sort dari pengeluaran terbesar
+    result.sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+    return result;
   }
 
   @override
@@ -41,11 +62,11 @@ class _ReportPageState extends State<ReportPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Laporan Keuangan"),
+        title: Text("Laporan Keuangan", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false, // Hapus tombol back karena ini Tab
       ),
       body: StreamBuilder<List<TransactionModel>>(
         stream: context.watch<TransactionProvider>().transactionStream,
@@ -62,12 +83,14 @@ class _ReportPageState extends State<ReportPage> {
           }
 
           final chartData = _generateChartData(monthlyTransactions, _currentDate);
-          final sortedCategories = _calculateRanking(monthlyTransactions).entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+          // Panggil fungsi ranking yang baru
+          final sortedCategories = _calculateRanking(monthlyTransactions);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
+                // === HEADER BULAN ===
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -82,6 +105,7 @@ class _ReportPageState extends State<ReportPage> {
                 ),
                 const SizedBox(height: 24),
 
+                // === KARTU CHART UTAMA ===
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.bgApp), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10)]),
@@ -89,7 +113,6 @@ class _ReportPageState extends State<ReportPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("PENGELUARAN BULAN INI", style: AppTheme.font.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.muted)),
-                      
                       Text(formatter.format(totalExpense), style: AppTheme.font.copyWith(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.dark)),
                       const SizedBox(height: 24),
                       ExpenseChart(dailyExpenses: chartData),
@@ -98,6 +121,7 @@ class _ReportPageState extends State<ReportPage> {
                 ),
                 const SizedBox(height: 24),
 
+                // === STATISTIK KECIL ===
                 Row(
                   children: [
                     Expanded(child: _buildStatCard("Pemasukan", totalIncome, AppTheme.success, FontAwesomeIcons.arrowDown, formatter)),
@@ -107,25 +131,82 @@ class _ReportPageState extends State<ReportPage> {
                 ),
                 const SizedBox(height: 32),
 
+                // === LIST PENGELUARAN TERBESAR ===
                 Align(alignment: Alignment.centerLeft, child: Text("Pengeluaran Terbesar", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark))),
                 const SizedBox(height: 16),
                 
-                if (sortedCategories.isEmpty) const Text("Belum ada pengeluaran."),
+                if (sortedCategories.isEmpty) 
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Text("Belum ada pengeluaran di bulan ini."),
+                  ),
 
-                ...sortedCategories.map((entry) {
-                  double percent = totalExpense == 0 ? 0 : (entry.value / totalExpense);
+                // Loop semua kategori (tanpa limit)
+                ...sortedCategories.map((data) {
+                  final name = data['name'] as String;
+                  final amount = data['amount'] as double;
+                  final colorIdx = data['colorIdx'] as int;
+                  
+                  // Ambil warna tema berdasarkan colorIdx
+                  final colorData = AppTheme.colorPalette[colorIdx % AppTheme.colorPalette.length];
+
+                  double percent = totalExpense == 0 ? 0 : (amount / totalExpense);
+                  
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Row(
                       children: [
-                        Container(width: 40, height: 40, decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(12)), child: Center(child: Text(entry.key[0], style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade700)))),
+                        // ICON KATEGORI (WARNA DINAMIS)
+                        Container(
+                          width: 40, height: 40, 
+                          decoration: BoxDecoration(
+                            color: colorData['bg'], // Background Warna Kategori
+                            borderRadius: BorderRadius.circular(12)
+                          ), 
+                          child: Center(
+                            child: Text(
+                              name[0].toUpperCase(), 
+                              style: TextStyle(fontWeight: FontWeight.bold, color: colorData['text']) // Text Warna Kategori
+                            )
+                          )
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             children: [
-                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(entry.key, style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 12)), Text("${(percent * 100).toStringAsFixed(0)}%", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 12))]),
+                              // ROW: NAMA KATEGORI & (NOMINAL + PERSEN)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                                children: [
+                                  Text(name, style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  // Tampilkan Nominal dan Persen
+                                  Row(
+                                    children: [
+                                      Text(
+                                        formatter.format(amount), 
+                                        style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.dark)
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "(${(percent * 100).toStringAsFixed(0)}%)", 
+                                        style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.muted)
+                                      ),
+                                    ],
+                                  )
+                                ]
+                              ),
                               const SizedBox(height: 6),
-                              ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: percent, minHeight: 8, backgroundColor: AppTheme.bgApp, valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue))),
+                              
+                              // PROGRESS BAR (Warna mengikuti kategori juga agar cantik)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4), 
+                                child: LinearProgressIndicator(
+                                  value: percent, 
+                                  minHeight: 8, 
+                                  backgroundColor: AppTheme.bgApp, 
+                                  valueColor: AlwaysStoppedAnimation<Color>(colorData['text']!) // Bar mengikuti warna kategori
+                                )
+                              ),
                             ],
                           ),
                         )
