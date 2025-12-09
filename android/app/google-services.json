@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "330795856822",
+    "project_id": "cashmeup-a872c",
+    "storage_bucket": "cashmeup-a872c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330795856822:android:15a2274eff0ab40d748717",
+        "android_client_info": {
+          "package_name": "com.example.cashmeup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0f-C6XFYdVIRFPRas2xt-kiT6jM_yhBc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
