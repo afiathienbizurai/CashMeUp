@@ -9,7 +9,7 @@ import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
 import 'add_transaction_page.dart'; 
-// import 'history_page.dart'; 
+import 'history_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -174,8 +174,19 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(FontAwesomeIcons.house, "Home", true),
-            _buildNavItem(FontAwesomeIcons.receipt, "History", false),
-            // Tombol ADD (Pura-pura dulu)
+
+            _buildNavItem(
+              FontAwesomeIcons.receipt, 
+              "History", 
+              false,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryPage()),
+                );
+              },
+            ),
+
             GestureDetector(
               onTap: () {
                 // Panggil Halaman AddTransactionPage
@@ -291,14 +302,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        FaIcon(icon, size: 20, color: isActive ? AppTheme.primary : AppTheme.muted),
-        const SizedBox(height: 4),
-        Text(label, style: AppTheme.font.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: isActive ? AppTheme.primary : AppTheme.muted)),
-      ],
+  // Tambahkan parameter '{VoidCallback? onTap}' agar tombol bisa menerima fungsi klik
+  Widget _buildNavItem(IconData icon, String label, bool isActive, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap, // Pasang fungsi klik di sini
+      behavior: HitTestBehavior.opaque, // Agar area kosong di sekitar icon juga bisa diklik
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FaIcon(icon, size: 20, color: isActive ? AppTheme.primary : AppTheme.muted),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTheme.font.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isActive ? AppTheme.primary : AppTheme.muted,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
