@@ -257,66 +257,6 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-
-      // BOTTOM NAVIGATION (Sederhana dulu, nanti dipisah)
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade100))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(FontAwesomeIcons.house, "Home", true),
-
-            _buildNavItem(
-              FontAwesomeIcons.receipt, 
-              "History", 
-              false,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
-                );
-              },
-            ),
-
-            GestureDetector(
-              onTap: () {
-                // Panggil Halaman AddTransactionPage
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(builder: (context) => const AddTransactionPage())
-                );
-              },
-              child: Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary, 
-                  borderRadius: BorderRadius.circular(16)
-                ),
-                child: const Center(
-                  child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 20)
-                ),
-              ),
-            ),
-            _buildNavItem(
-              FontAwesomeIcons.bullseye, 
-              "Goals", 
-              false,
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalsPage()));
-              },
-            ),
-            _buildNavItem(
-              FontAwesomeIcons.chartPie, 
-              "Report", 
-              false,
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportPage()));
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 

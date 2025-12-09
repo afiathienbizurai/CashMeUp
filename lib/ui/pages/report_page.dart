@@ -45,7 +45,13 @@ class _ReportPageState extends State<ReportPage> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const BackButton(color: AppTheme.dark),
+        appBar: AppBar(
+          title: Text("Laporan Keuangan", ...),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false, // Hapus leading: BackButton(...)
+        ),
       ),
       body: StreamBuilder<List<TransactionModel>>(
         stream: context.watch<TransactionProvider>().transactionStream,

@@ -49,9 +49,12 @@ class _HistoryPageState extends State<HistoryPage> {
         elevation: 0,
         centerTitle: true,
         title: Text("Riwayat Transaksi", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.dark),
-          onPressed: () => Navigator.pop(context),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: Text("Riwayat Transaksi", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+          automaticallyImplyLeading: false, 
         ),
       ),
       body: StreamBuilder<List<TransactionModel>>(

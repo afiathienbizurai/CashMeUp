@@ -25,11 +25,14 @@ class GoalsPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.dark),
-          onPressed: () => Navigator.pop(context),
+        appBar: AppBar(
+          title: Text("Goals & Impian", ...),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false, 
+          actions: [ ... ], 
         ),
-        // PERBAIKAN 1: Tombol Tambah selalu muncul di Header
         actions: [
           IconButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
