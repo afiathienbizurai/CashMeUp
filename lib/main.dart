@@ -6,6 +6,8 @@ import 'firebase_options.dart'; // jalankan 'flutterfire configure
 // Import Providers & Services
 import 'services/auth_service.dart';
 import 'providers/transaction_provider.dart';
+import 'ui/pages/login_page.dart';
+import 'ui/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,9 +54,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final user = snapshot.data;
-          // Jika User ada, ke Home. Jika tidak, ke Login.
-          return user == null ? const Scaffold(body: Center(child: Text("Halaman Login"))) : const Scaffold(body: Center(child: Text("Halaman Home")));
-          // Nanti diganti jadi: return user == null ? LoginPage() : HomePage();
+          return user == null ? const LoginPage() : const HomePage();
         }
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
