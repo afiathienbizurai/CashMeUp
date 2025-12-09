@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Butuh provider untuk panggil fungsi delete
+import 'package:provider/provider.dart'; 
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme.dart';
@@ -15,6 +15,7 @@ class TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = transaction.type == 'income';
     final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final colorData = AppTheme.colorPalette[transaction.colorIdx % AppTheme.colorPalette.length];
 
     // BUNGKUS DENGAN DISMISSIBLE
     return Dismissible(
@@ -80,7 +81,8 @@ class TransactionCard extends StatelessWidget {
             Container(
               width: 48, height: 48,
               decoration: BoxDecoration(
-                color: isIncome ? AppTheme.success.withOpacity(0.1) : Colors.blue.shade50,
+                // Gunakan warna background dari kategori
+                color: colorData['bg'], 
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
@@ -89,7 +91,8 @@ class TransactionCard extends StatelessWidget {
                   style: AppTheme.font.copyWith(
                     fontSize: 18, 
                     fontWeight: FontWeight.bold,
-                    color: isIncome ? AppTheme.success : Colors.blue.shade600
+                    // Gunakan warna teks dari kategori
+                    color: colorData['text'], 
                   ),
                 ),
               ),
