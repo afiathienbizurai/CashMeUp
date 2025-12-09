@@ -4,13 +4,12 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // jalankan 'flutterfire configure
 import 'package:intl/date_symbol_data_local.dart';
 
-// Import Providers & Services
+import 'ui/pages/main_page.dart';
 import 'services/auth_service.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/goal_provider.dart';
 import 'ui/pages/login_page.dart';
-import 'ui/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +60,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final user = snapshot.data;
-          return user == null ? const LoginPage() : const HomePage();
+          return user == null ? const LoginPage() : const MainPage();
         }
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
