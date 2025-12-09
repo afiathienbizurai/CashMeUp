@@ -11,6 +11,7 @@ import '../../providers/transaction_provider.dart';
 import 'add_transaction_page.dart'; 
 import 'history_page.dart';
 import 'goals_page.dart';
+import 'report_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -215,7 +216,14 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalsPage()));
               },
             ),
-            _buildNavItem(FontAwesomeIcons.chartPie, "Report", false),
+            _buildNavItem(
+              FontAwesomeIcons.chartPie, 
+              "Report", 
+              false,
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportPage()));
+              },
+            ),
           ],
         ),
       ),
