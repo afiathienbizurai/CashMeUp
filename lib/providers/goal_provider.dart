@@ -27,15 +27,11 @@ class GoalProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateGoal(GoalModel goal) async {
+  Future<void> updateGoal(String id, int newCurrentAmount) async {
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
-      await _db.collection('users').doc(uid).collection('goals').doc(goal.id).update({
-        'title': goal.title,
-        'target': goal.targetAmount,
-        'current': goal.currentAmount,
-        'colorIdx': goal.colorIdx,
-        'isCompleted': goal.isCompleted,
+      await _db.collection('users').doc(uid).collection('goals').doc(id).update({
+        'current': newCurrentAmount,
       });
     }
   }
