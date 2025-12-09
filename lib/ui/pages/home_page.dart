@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
+import '../widgets/market_widget.dart';
 import 'add_transaction_page.dart'; 
 import 'history_page.dart';
 import 'goals_page.dart';
@@ -165,8 +166,11 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.all(20),
                     child: Text("Belum ada transaksi", style: AppTheme.font.copyWith(color: AppTheme.muted)),
                   ),
-                  
-                const SizedBox(height: 100), // Spasi bawah agar tidak tertutup nav bar
+                const SizedBox(height: 32),
+
+                const MarketWidget(),
+
+                const SizedBox(height: 100), 
               ],
             ),
           );
