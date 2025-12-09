@@ -88,7 +88,8 @@ class _ReportPageState extends State<ReportPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Pengeluaran Bulan Ini".toUpperCase(), style: AppTheme.font.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.muted)),
+                      Text("PENGELUARAN BULAN INI", style: AppTheme.font.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.muted)),
+                      
                       Text(formatter.format(totalExpense), style: AppTheme.font.copyWith(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.dark)),
                       const SizedBox(height: 24),
                       ExpenseChart(dailyExpenses: chartData),

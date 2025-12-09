@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // jalankan 'flutterfire configure
+import 'package:intl/date_symbol_data_local.dart';
 
 // Import Providers & Services
 import 'services/auth_service.dart';
@@ -17,6 +18,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await initializeDateFormatting('id_ID', null);
 
   runApp(const MyApp());
 }
