@@ -15,8 +15,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final User? user = FirebaseAuth.instance.currentUser;
-  bool _pushNotification = true; // Default
+  // Kita tidak pakai 'final' agar bisa di-refresh saat nama berubah
+  User? user = FirebaseAuth.instance.currentUser;
+  bool _pushNotification = true;
 
   @override
   void initState() {
@@ -24,7 +25,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadNotificationSetting();
   }
 
-  // Load status notifikasi dari Firestore
   void _loadNotificationSetting() async {
     if (user != null) {
       final doc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
@@ -36,7 +36,6 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  // Toggle notifikasi
   void _toggleNotification(bool value) async {
     setState(() => _pushNotification = value);
     if (user != null) {
@@ -44,8 +43,63 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  // LOGIC GANTI NAMA
+  void _showEditNameDialog() {
+    final nameController = TextEditingController(text: user?.displayName);
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Ganti Nama Panggilan"),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: "Nama Baru",
+            hintText: "Contoh: Nisa",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx), 
+            child: const Text("Batal")
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+            onPressed: () async {
+              if (nameController.text.isNotEmpty) {
+                // Panggil Service Update
+                await context.read<AuthService>().updateUserName(nameController.text);
+                
+                // Refresh User Lokal di UI Settings
+                setState(() {
+                  user = FirebaseAuth.instance.currentUser;
+                });
+                
+                if (mounted) Navigator.pop(ctx);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Nama berhasil diubah!"))
+                );
+              }
+            }, 
+            child: const Text("Simpan", style: TextStyle(color: Colors.white))
+          ),
+        ],
+      )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // LOGIC DEFAULT NAME:
+    // Jika displayName ada, pakai itu. 
+    // Jika kosong, ambil bagian depan email (misal: nisa@email.com -> nisa)
+    String displayName = user?.displayName ?? user?.email?.split('@')[0] ?? "User";
+    // Huruf kapital awal (Opsional)
+    if (displayName.isNotEmpty) {
+      displayName = displayName[0].toUpperCase() + displayName.substring(1);
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.bgApp,
       appBar: AppBar(
@@ -68,16 +122,34 @@ class _SettingsPageState extends State<SettingsPage> {
                   Container(
                     width: 60, height: 60,
                     decoration: BoxDecoration(color: AppTheme.primarySoft, shape: BoxShape.circle, border: Border.all(color: Colors.indigo.shade100, width: 2)),
-                    child: Center(child: Text(user?.displayName?.substring(0, 1).toUpperCase() ?? "U", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary))),
+                    child: Center(
+                      child: Text(
+                        displayName.isNotEmpty ? displayName[0].toUpperCase() : "U", 
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary)
+                      )
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(user?.displayName ?? "User", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(user?.email ?? "", style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted)),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayName, style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(user?.email ?? "", style: AppTheme.font.copyWith(fontSize: 12, color: AppTheme.muted)),
+                        const SizedBox(height: 8),
+                        
+                        // TOMBOL EDIT PROFIL (SEKARANG BERFUNGSI)
+                        GestureDetector(
+                          onTap: _showEditNameDialog,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(color: AppTheme.dark, borderRadius: BorderRadius.circular(20)),
+                            child: const Text("Ganti Nama", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        )
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -115,7 +187,7 @@ class _SettingsPageState extends State<SettingsPage> {
             TextButton(
               onPressed: () async {
                 await context.read<AuthService>().signOut();
-                if (mounted) Navigator.of(context).popUntil((route) => route.isFirst); // Kembali ke Root/Login
+                if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: Text("Keluar Aplikasi", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, color: AppTheme.danger)),
             ),
