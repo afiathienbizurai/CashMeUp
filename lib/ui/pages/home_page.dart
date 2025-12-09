@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; 
 
-// Import file internal
 import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
@@ -30,6 +30,37 @@ class _HomePageState extends State<HomePage> {
   String formatRupiah(int amount) {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(amount);
   }
+
+  @override
+    void initState() {
+      super.initState();
+      
+      // SETUP LISTENER NOTIFIKASI (FOREGROUND)
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (message.notification != null) {
+          // Tampilkan Snackbar jika ada pesan masuk
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppTheme.primary,
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message.notification!.title ?? 'Notifikasi Baru',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(message.notification!.body ?? ''),
+                ],
+              ),
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating, // Melayang di atas
+              margin: const EdgeInsets.all(20), // Jarak dari pinggir
+            ),
+          );
+        }
+      });
+    }
 
   @override
   Widget build(BuildContext context) {
