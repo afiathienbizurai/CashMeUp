@@ -3,15 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_messaging/firebase_messaging.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
 import '../widgets/market_widget.dart';
-import 'settings_page.dart';
+import '../widgets/transaction_card.dart'; 
 import 'notification_page.dart';
+import 'settings_page.dart';
+import 'history_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,60 +22,38 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Ambil user yang sedang login untuk ditampilkan namanya
   final User? user = FirebaseAuth.instance.currentUser;
 
-  // Fungsi helper untuk format Rupiah
   String formatRupiah(int amount) {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(amount);
   }
 
   @override
-    void initState() {
-      super.initState();
-      
-      // SETUP LISTENER NOTIFIKASI (FOREGROUND)
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        if (message.notification != null) {
-          // Tampilkan Snackbar jika ada pesan masuk
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: AppTheme.primary,
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    message.notification!.title ?? 'Notifikasi Baru',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(message.notification!.body ?? ''),
-                ],
-              ),
-              duration: const Duration(seconds: 4),
-              behavior: SnackBarBehavior.floating, // Melayang di atas
-              margin: const EdgeInsets.all(20), // Jarak dari pinggir
-            ),
-          );
-        }
-      });
-    }
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // TransactionProvider sudah kita setup di main.dart
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    String displayName = user?.displayName ?? user?.email?.split('@')[0] ?? "User";
+    if (displayName.isNotEmpty) {
+      displayName = displayName[0].toUpperCase() + displayName.substring(1);
+    }
+
     final transactionProvider = Provider.of<TransactionProvider>(context);
 
     return Scaffold(
       backgroundColor: AppTheme.bgApp,
-      // HEADER
+      // HEADER (APP BAR)
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         toolbarHeight: 80,
+        automaticallyImplyLeading: false, // Hapus tombol back karena ini Tab Utama
         title: Row(
           children: [
-            // Avatar Inisial User
             Container(
               width: 44,
               height: 44,
@@ -95,7 +74,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Haii, ${user?.displayName?.split(' ')[0] ?? 'User'}! 👋",
+                  "Haii, $displayName! 👋",
                   style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark),
                 ),
                 Text(
@@ -122,9 +101,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: const FaIcon(FontAwesomeIcons.bell, size: 20, color: AppTheme.dark),
                 ),
-                
-                // Indikator Merah (Dot) - Cek Realtime jika ada yang unread
-                // Kita gunakan StreamBuilder kecil di sini khusus untuk badge
                 Positioned(
                   right: 0,
                   top: 0,
@@ -133,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                         .collection('users')
                         .doc(FirebaseAuth.instance.currentUser?.uid)
                         .collection('notifications')
-                        .where('isRead', isEqualTo: false) // Hanya cari yang belum dibaca
+                        .where('isRead', isEqualTo: false)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
@@ -147,17 +123,16 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       }
-                      return const SizedBox(); // Tidak ada dot jika semua sudah dibaca
+                      return const SizedBox();
                     },
                   ),
                 ),
               ],
             ),
           ),
-
           const SizedBox(width: 8),
 
-          // TOMBOL SETTINGS (Yang sudah ada sebelumnya)
+          // TOMBOL SETTINGS
           IconButton(
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
@@ -172,25 +147,21 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       
-      // BODY: Menggunakan StreamBuilder agar data REALTIME dari Firebase
+      // BODY
       body: StreamBuilder<List<TransactionModel>>(
-        stream: transactionProvider.transactionStream, // Mendengarkan stream dari Provider
+        stream: transactionProvider.transactionStream,
         builder: (context, snapshot) {
-          
-          // 1. Loading State
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2. Error State
           if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
           }
 
-          // 3. Data Ready
           final transactions = snapshot.data ?? [];
           
-          // LOGIC HITUNG SALDO (Client Side Calculation)
+          // Logic Saldo
           int pemasukan = 0;
           int pengeluaran = 0;
           for (var t in transactions) {
@@ -225,29 +196,35 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 32),
 
-                // === RECENT TRANSACTIONS ===
+                // === RECENT TRANSACTIONS HEADER ===
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Transaksi Terbaru", style: AppTheme.font.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                    TextButton(onPressed: () {}, child: Text("Lihat Semua", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary))),
+                    TextButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HistoryPage())),
+                      child: Text("Lihat Semua", style: AppTheme.font.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary))
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                // List Transaksi (Ambil 5 teratas saja untuk Home)
-                ...transactions.take(5).map((t) => _buildTransactionItem(t)),
+                // === LIST TRANSAKSI TERBARU (Updated) ===
+                // Sekarang menggunakan TransactionCard agar warnanya sinkron dengan History Page
+                ...transactions.take(5).map((t) => TransactionCard(transaction: t)),
                 
                 if (transactions.isEmpty) 
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Text("Belum ada transaksi", style: AppTheme.font.copyWith(color: AppTheme.muted)),
                   ),
+                  
                 const SizedBox(height: 32),
-
+                
+                // === MARKET WIDGETS ===
                 const MarketWidget(),
 
-                const SizedBox(height: 100), 
+                const SizedBox(height: 100),
               ],
             ),
           );
@@ -256,7 +233,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // WIDGET KECIL (HELPER)
   Widget _buildSummaryCard(String title, int amount, Color color, IconData icon) {
     return Expanded(
       child: Container(
@@ -286,60 +262,6 @@ class _HomePageState extends State<HomePage> {
             )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTransactionItem(TransactionModel t) {
-    final isIncome = t.type == 'income';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade50),
-      ),
-      child: Row(
-        children: [
-          // Inisial Huruf (Pengganti Icon)
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color: isIncome ? AppTheme.success.withOpacity(0.1) : Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Center(
-              child: Text(
-                t.title.isNotEmpty ? t.title[0].toUpperCase() : "?",
-                style: AppTheme.font.copyWith(
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold,
-                  color: isIncome ? AppTheme.success : Colors.blue.shade600
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(t.title, style: AppTheme.font.copyWith(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.dark)),
-                const SizedBox(height: 2),
-                Text(t.category, style: AppTheme.font.copyWith(fontSize: 11, color: AppTheme.muted)),
-              ],
-            ),
-          ),
-          Text(
-            "${isIncome ? '+' : '-'} ${formatRupiah(t.amount)}",
-            style: AppTheme.font.copyWith(
-              fontSize: 14, 
-              fontWeight: FontWeight.bold,
-              color: isIncome ? AppTheme.success : AppTheme.dark // Expense warna hitam sesuai desain
-            ),
-          ),
-        ],
       ),
     );
   }
