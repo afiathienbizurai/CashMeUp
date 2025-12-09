@@ -12,6 +12,7 @@ import 'add_transaction_page.dart';
 import 'history_page.dart';
 import 'goals_page.dart';
 import 'report_page.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -77,12 +78,16 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           // Tombol Notifikasi & Settings (Navigasi menyusul)
+          // Di AppBar actions:
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              // Navigasi ke Settings
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+            },
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const FaIcon(FontAwesomeIcons.bell, size: 20, color: AppTheme.dark),
+              child: const FaIcon(FontAwesomeIcons.gear, size: 20, color: AppTheme.dark),
             ),
           ),
           const SizedBox(width: 16),
