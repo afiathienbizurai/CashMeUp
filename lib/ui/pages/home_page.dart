@@ -8,8 +8,8 @@ import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
-// import 'add_transaction_page.dart'; // Nanti dibuat di tahap 3
-// import 'history_page.dart'; // Nanti dibuat di tahap 3
+import 'add_transaction_page.dart'; 
+// import 'history_page.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -178,14 +178,23 @@ class _HomePageState extends State<HomePage> {
             // Tombol ADD (Pura-pura dulu)
             GestureDetector(
               onTap: () {
-                // Navigasi ke AddTransactionPage
+                // Panggil Halaman AddTransactionPage
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => const AddTransactionPage())
+                );
               },
               child: Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(16)),
-                child: const Center(child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 20)),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary, 
+                  borderRadius: BorderRadius.circular(16)
+                ),
+                child: const Center(
+                  child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 20)
+                ),
               ),
-            ),
+),
             _buildNavItem(FontAwesomeIcons.bullseye, "Goals", false),
             _buildNavItem(FontAwesomeIcons.chartPie, "Report", false),
           ],
