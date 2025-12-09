@@ -41,17 +41,11 @@ class _ReportPageState extends State<ReportPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Laporan Keuangan", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Text("Laporan Keuangan"),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        appBar: AppBar(
-          title: Text("Laporan Keuangan", ...),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false, // Hapus leading: BackButton(...)
-        ),
+        automaticallyImplyLeading: false, 
       ),
       body: StreamBuilder<List<TransactionModel>>(
         stream: context.watch<TransactionProvider>().transactionStream,

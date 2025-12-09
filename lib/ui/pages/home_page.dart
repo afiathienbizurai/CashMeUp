@@ -10,10 +10,6 @@ import '../../core/theme.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
 import '../widgets/market_widget.dart';
-import 'add_transaction_page.dart'; 
-import 'history_page.dart';
-import 'goals_page.dart';
-import 'report_page.dart';
 import 'settings_page.dart';
 import 'notification_page.dart';
 
@@ -341,29 +337,6 @@ class _HomePageState extends State<HomePage> {
               fontSize: 14, 
               fontWeight: FontWeight.bold,
               color: isIncome ? AppTheme.success : AppTheme.dark // Expense warna hitam sesuai desain
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Tambahkan parameter '{VoidCallback? onTap}' agar tombol bisa menerima fungsi klik
-  Widget _buildNavItem(IconData icon, String label, bool isActive, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap, // Pasang fungsi klik di sini
-      behavior: HitTestBehavior.opaque, // Agar area kosong di sekitar icon juga bisa diklik
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FaIcon(icon, size: 20, color: isActive ? AppTheme.primary : AppTheme.muted),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTheme.font.copyWith(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: isActive ? AppTheme.primary : AppTheme.muted,
             ),
           ),
         ],

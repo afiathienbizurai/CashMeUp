@@ -49,13 +49,7 @@ class _HistoryPageState extends State<HistoryPage> {
         elevation: 0,
         centerTitle: true,
         title: Text("Riwayat Transaksi", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          title: Text("Riwayat Transaksi", style: AppTheme.font.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
-          automaticallyImplyLeading: false, 
-        ),
+        automaticallyImplyLeading: false, 
       ),
       body: StreamBuilder<List<TransactionModel>>(
         stream: context.watch<TransactionProvider>().transactionStream,

@@ -25,14 +25,8 @@ class GoalsPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        appBar: AppBar(
-          title: Text("Goals & Impian", ...),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false, 
-          actions: [ ... ], 
-        ),
+        automaticallyImplyLeading: false,
+        
         actions: [
           IconButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalPage())),
